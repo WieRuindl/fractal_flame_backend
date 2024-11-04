@@ -5,7 +5,7 @@ FROM maven:3.8.3-openjdk-17 AS build
 WORKDIR /app
 
 # Step 3: Copy the source code into the container
-COPY pom.xml .
+COPY build.gradle .
 COPY src ./src
 
 # Step 4: Package the Spring Boot application using Maven
