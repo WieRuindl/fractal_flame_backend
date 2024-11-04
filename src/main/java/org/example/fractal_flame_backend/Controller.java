@@ -1,8 +1,6 @@
 package org.example.fractal_flame_backend;
 
 import lombok.SneakyThrows;
-import org.example.fractal_flame_backend.model.Pixel;
-import org.example.fractal_flame_backend.model.Size;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,15 +24,7 @@ public class Controller {
         return "hello";
     }
 
-
-    @GetMapping("/hello")
-    public String helloAgain() {
-        return "hello again";
-    }
-
-
-    @GetMapping("/generate/{width}/{height}/{scale}/{id}")
-//    @CrossOrigin(origins = "http://localhost:7222")https://fractal-flame-ui.onrender.com
+    @GetMapping("/generate/{width}/{height}/{scale}{id}")
     @CrossOrigin(origins = "https://fractal-flame-ui.onrender.com")
     public Map<String, String> hello(
             @PathVariable int width,
@@ -44,26 +34,22 @@ public class Controller {
     ) {
         var start = currentTimeMillis();
         System.out.println("start at " + start);
-        Pixel[][] pixelsMap = ImageGenerator.generateImage(id, new Size(width*scale, height*scale));
+        System.out.println("generate " + width + "x" + height + " image");
 
-        BufferedImage image = new BufferedImage(width*scale, height*scale, BufferedImage.TYPE_4BYTE_ABGR);
-        for (int y = 0; y < height*scale; y++) {
-            for (int x = 0; x < width*scale; x++) {
-                image.setRGB(x, y, new Color(pixelsMap[x][y].r, pixelsMap[x][y].g, pixelsMap[x][y].b).getRGB());
-            }
-        }
+        BufferedImage image = ImageGenerator.generateImage(id, width*scale, height*scale);
         BufferedImage scaledImage = scaleImage(image, width, height);
-        String base64 = convertBufferedImageToBase64(scaledImage);
+
         var end = currentTimeMillis();
         System.out.println((end - start)/1000 + "s");
 
+        String base64 = convertBufferedImageToBase64(scaledImage);
         Map<String, String> response = new HashMap<>();
         response.put("image", base64);
 
         return response;
     }
 
-    public BufferedImage scaleImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
+    public BufferedImage scaleImage(Image originalImage, int targetWidth, int targetHeight) {
         BufferedImage scaledImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics2D = scaledImage.createGraphics();
         graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
@@ -75,7 +61,6 @@ public class Controller {
     @SneakyThrows
     public String convertBufferedImageToBase64(BufferedImage image) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        image.
         ImageIO.write(image, "png", outputStream);
         byte[] imageBytes = outputStream.toByteArray();
         return Base64.getEncoder().encodeToString(imageBytes);

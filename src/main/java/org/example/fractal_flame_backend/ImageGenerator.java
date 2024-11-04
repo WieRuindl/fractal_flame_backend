@@ -3,8 +3,9 @@ package org.example.fractal_flame_backend;
 import org.example.fractal_flame_backend.model.Coefficients;
 import org.example.fractal_flame_backend.model.Pixel;
 import org.example.fractal_flame_backend.model.Point;
-import org.example.fractal_flame_backend.model.Size;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Random;
 
@@ -18,28 +19,29 @@ import static java.lang.Math.sqrt;
 
 public class ImageGenerator {
 
-    static Pixel[][] generateImage(String id, Size size) {
+
+    static BufferedImage generateImage(String id, int width, int height) {
 
         Random random = new Random(id.hashCode());
         List<Coefficients> affineTransformations = new AffineTransformation().generate(20, random);
 
-        Pixel[][] pixelMap = new Pixel[size.width()][size.height()];
+        Pixel[][] pixelMap = new Pixel[width][height];
         
-        for (int y = 0; y < size.height(); y++) {
-            for (int x = 0; x < size.width(); x++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 pixelMap[x][y] = new Pixel();
             }
         }
 
         double yMax = 1,                                    yMin = -yMax;
-        double xMax = (double)size.height() / size.width(), xMin = -xMax;
+        double xMax = (double)height / width, xMin = -xMax;
 
         double newX = random.nextDouble() * (xMax - xMin) + xMin;
         double newY = random.nextDouble() * (yMax - yMin) + yMin;
 
         int countOfStepsScaleModifier = 10;
 
-        var iterations = size.width() * size.height() * countOfStepsScaleModifier;
+        var iterations = width * height * countOfStepsScaleModifier;
         for (int step = -20; step < iterations; step++) {
 
             int i = random.nextInt(affineTransformations.size());
@@ -56,10 +58,10 @@ public class ImageGenerator {
                     && yMin <= newY && newY <= yMax
             ) {
 
-                int x1 = (int)(size.width() * (1 - ((xMax - newX) / (xMax - xMin))));
-                int y1 = (int)(size.height() * (1 - ((yMax - newY) / (yMax - yMin))));
+                int x1 = (int)(width * (1 - ((xMax - newX) / (xMax - xMin))));
+                int y1 = (int)(height * (1 - ((yMax - newY) / (yMax - yMin))));
 
-                if (x1 < size.width() && y1 < size.height()) {
+                if (x1 < width && y1 < height) {
                     var pixel = pixelMap[x1][y1];
                     if (pixel.counter == 0) {
                         pixel.r = affineTransformations.get(i).color().r();
@@ -76,8 +78,8 @@ public class ImageGenerator {
         }
 
         double maxValue = 0.0;
-        for (int y = 0; y < size.height(); y++) {
-            for (int x = 0; x < size.width(); x++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 if (pixelMap[x][y].counter != 0) {
                     pixelMap[x][y].normal = log10(pixelMap[x][y].counter);
                     maxValue = max(maxValue, pixelMap[x][y].normal);
@@ -87,8 +89,8 @@ public class ImageGenerator {
 
     double gamma = 2.2;
     double correctionValue = 1.0 / gamma;
-        for (int y = 0; y < size.height(); y++) {
-            for (int x = 0; x < size.width(); x++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
                 Pixel pixel = pixelMap[x][y];
 
                 pixel.normal = pixel.normal / maxValue;
@@ -100,7 +102,15 @@ public class ImageGenerator {
             }
         }
 
-        return pixelMap;
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                image.setRGB(x, y, new Color(pixelMap[x][y].r, pixelMap[x][y].g, pixelMap[x][y].b).getRGB());
+            }
+        }
+
+        return image;
     }
 
     static Point sphere(double x, double y) {
