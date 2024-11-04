@@ -1,5 +1,5 @@
 # Use an official Gradle image as the base image for building
-FROM gradle:7.4.2-jdk17 AS build
+FROM gradle:8.10.2-jdk21 AS build
 
 # Set the working directory
 WORKDIR /app
@@ -11,7 +11,7 @@ RUN chmod +x ./gradlew
 RUN ./gradlew build
 
 # Step 5: Use an OpenJDK runtime image to run the packaged application
-FROM openjdk:17-alpine
+FROM openjdk:21-slim
 
 # Step 6: Set the working directory in the runtime container
 WORKDIR /app
