@@ -5,7 +5,6 @@ FROM gradle:7.4.2-jdk17 AS build
 WORKDIR /app
 
 # Copy only the Gradle wrapper and settings files to cache dependencies
-COPY build.gradle.kts settings.gradle.kts ./
 COPY gradle ./gradle
 
 # Download dependencies
