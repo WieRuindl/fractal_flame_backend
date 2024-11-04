@@ -22,7 +22,8 @@ import static java.lang.System.currentTimeMillis;
 public class Controller {
 
     @GetMapping("/generate/{width}/{height}/{scale}/{id}")
-    @CrossOrigin(origins = "http://localhost:7222")
+//    @CrossOrigin(origins = "http://localhost:7222")https://fractal-flame-ui.onrender.com
+    @CrossOrigin(origins = "https://fractal-flame-ui.onrender.com")
     public Map<String, String> hello(
             @PathVariable int width,
             @PathVariable int height,
