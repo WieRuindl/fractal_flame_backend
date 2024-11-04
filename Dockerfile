@@ -1,15 +1,21 @@
-# Step 1: Use a Maven image to build the application
-FROM maven:3.8.3-openjdk-17 AS build
+# Use an official Gradle image as the base image for building
+FROM gradle:7.4.2-jdk17 AS build
 
-# Step 2: Set the working directory in the container
+# Set the working directory
 WORKDIR /app
 
-# Step 3: Copy the source code into the container
-COPY build.gradle .
+# Copy only the Gradle wrapper and settings files to cache dependencies
+COPY build.gradle.kts settings.gradle.kts ./
+COPY gradle ./gradle
+
+# Download dependencies
+RUN gradle dependencies
+
+# Copy the rest of the application files
 COPY src ./src
 
-# Step 4: Package the Spring Boot application using Maven
-RUN mvn clean package -DskipTests
+# Build the application
+RUN gradle build
 
 # Step 5: Use an OpenJDK runtime image to run the packaged application
 FROM openjdk:17-alpine
@@ -18,7 +24,7 @@ FROM openjdk:17-alpine
 WORKDIR /app
 
 # Step 7: Copy the packaged JAR from the build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/build/libs/*.jar app.jar
 
 # Step 8: Expose the application port
 EXPOSE 8080
