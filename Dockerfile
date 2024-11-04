@@ -7,9 +7,7 @@ WORKDIR /app
 # Copy only the Gradle wrapper and settings files to cache dependencies
 COPY . .
 
-# Run Gradle with the wrapper, refreshing dependencies
-RUN ./gradlew dependencies --no-daemon --refresh-dependencies
-RUN ./gradlew build --no-daemon
+RUN ./gradlew build
 
 # Step 5: Use an OpenJDK runtime image to run the packaged application
 FROM openjdk:17-alpine
