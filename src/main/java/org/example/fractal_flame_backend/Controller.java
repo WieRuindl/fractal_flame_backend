@@ -21,6 +21,18 @@ import static java.lang.System.currentTimeMillis;
 @RestController
 public class Controller {
 
+    @GetMapping("/")
+    public String hello() {
+        return "hello";
+    }
+
+
+    @GetMapping("/hello")
+    public String helloAgain() {
+        return "hello again";
+    }
+
+
     @GetMapping("/generate/{width}/{height}/{scale}/{id}")
 //    @CrossOrigin(origins = "http://localhost:7222")https://fractal-flame-ui.onrender.com
     @CrossOrigin(origins = "https://fractal-flame-ui.onrender.com")
@@ -31,7 +43,7 @@ public class Controller {
             @PathVariable String id
     ) {
         var start = currentTimeMillis();
-        System.out.println(id);
+        System.out.println("start at " + start);
         Pixel[][] pixelsMap = ImageGenerator.generateImage(id, new Size(width*scale, height*scale));
 
         BufferedImage image = new BufferedImage(width*scale, height*scale, BufferedImage.TYPE_4BYTE_ABGR);
