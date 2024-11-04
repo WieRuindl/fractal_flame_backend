@@ -24,7 +24,7 @@ public class Controller {
         return "hello";
     }
 
-    @GetMapping("/generate/{width}/{height}/{scale}{id}")
+    @GetMapping("/generate/{width}/{height}/{scale}/{id}")
     @CrossOrigin(origins = "https://fractal-flame-ui.onrender.com")
     public Map<String, String> hello(
             @PathVariable int width,
