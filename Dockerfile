@@ -7,6 +7,7 @@ WORKDIR /app
 # Copy only the Gradle wrapper and settings files to cache dependencies
 COPY . .
 
+RUN chmod +x ./gradlew
 RUN ./gradlew build
 
 # Step 5: Use an OpenJDK runtime image to run the packaged application
