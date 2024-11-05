@@ -3,24 +3,22 @@ package org.example.fractal_flame_backend;
 import org.example.fractal_flame_backend.model.Coefficients;
 import org.example.fractal_flame_backend.model.Pixel;
 import org.example.fractal_flame_backend.model.Point;
+import org.example.fractal_flame_backend.transformationfunction.TransformationFunction;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.List;
 import java.util.Random;
 
-import static java.lang.Math.atan2;
-import static java.lang.Math.cos;
 import static java.lang.Math.log10;
 import static java.lang.Math.max;
 import static java.lang.Math.pow;
-import static java.lang.Math.sin;
-import static java.lang.Math.sqrt;
 
 public class ImageGenerator {
 
+    private static final int COUNT_OF_STEPS_SCALE_MODIFIER = 10;
 
-    static BufferedImage generateImage(String id, int width, int height) {
+    static BufferedImage generateImage(String id, int width, int height, TransformationFunction function) {
 
         Random random = new Random(id.hashCode());
         List<Coefficients> affineTransformations = new AffineTransformation().generate(20, random);
@@ -33,15 +31,13 @@ public class ImageGenerator {
             }
         }
 
-        double yMax = 1,                                    yMin = -yMax;
+        double yMax = 1,                      yMin = -yMax;
         double xMax = (double)height / width, xMin = -xMax;
 
         double newX = random.nextDouble() * (xMax - xMin) + xMin;
         double newY = random.nextDouble() * (yMax - yMin) + yMin;
 
-        int countOfStepsScaleModifier = 10;
-
-        var iterations = width * height * countOfStepsScaleModifier;
+        var iterations = width * height * COUNT_OF_STEPS_SCALE_MODIFIER;
         for (int step = -20; step < iterations; step++) {
 
             int i = random.nextInt(affineTransformations.size());
@@ -49,7 +45,7 @@ public class ImageGenerator {
             newX = affineTransformations.get(i).a() * newX + affineTransformations.get(i).b() * newY + affineTransformations.get(i).c();
             newY = affineTransformations.get(i).d() * newX + affineTransformations.get(i).e() * newY + affineTransformations.get(i).f();
 
-            Point p = sphere(newX, newY);
+            Point p = function.apply(newX, newY);
             newX = p.x();
             newY = p.y();
 
@@ -87,8 +83,8 @@ public class ImageGenerator {
             }
         }
 
-    double gamma = 2.2;
-    double correctionValue = 1.0 / gamma;
+        double gamma = 2.2;
+        double correctionValue = 1.0 / gamma;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 Pixel pixel = pixelMap[x][y];
@@ -113,13 +109,4 @@ public class ImageGenerator {
         return image;
     }
 
-    static Point sphere(double x, double y) {
-        double r2 = pow(x, 2) + pow(y, 2);
-//        return new Point((x / r2), (y / r2));
-//         return new Point(sin(x), sin(y));
-//      return new Point(x*sin(r2)-y*cos(r2), x*cos(r2)*y*sin(r2));
-//        return new Point(atan2(x, y) / Math.PI, sqrt(r2) - 1);
-        var sqrt = atan2(x, y) * sqrt(r2);
-        return new Point(sqrt(r2) * sin(sqrt), -sqrt(r2) * cos(sqrt));
-    }
 }

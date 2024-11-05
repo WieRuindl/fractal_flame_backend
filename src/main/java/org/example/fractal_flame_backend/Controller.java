@@ -1,6 +1,8 @@
 package org.example.fractal_flame_backend;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.example.fractal_flame_backend.transformationfunction.TransformationFunction;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,32 +16,48 @@ import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.System.currentTimeMillis;
 
 @RestController
+@RequiredArgsConstructor
 public class Controller {
+
+    private final Map<String, TransformationFunction> functions;
 
     @GetMapping("/")
     public String hello() {
         return "hello";
     }
 
-    @GetMapping("/generate/{width}/{height}/{scale}/{id}")
+    @GetMapping("/functions")
     @CrossOrigin(origins = "https://fractal-flame-ui.onrender.com")
-//    @CrossOrigin(origins = "http://localhost:7083")
+    public List<String> getAvailableFunctions() {
+        return functions.keySet().stream().toList();
+    }
+
+    @GetMapping("/generate/{width}/{height}/{scale}/{id}/{functionName}")
+    @CrossOrigin(origins = "https://fractal-flame-ui.onrender.com")
     public Map<String, String> generateImage(
             @PathVariable int width,
             @PathVariable int height,
             @PathVariable double scale,
-            @PathVariable String id
+            @PathVariable String id,
+            @PathVariable String functionName
     ) {
+
+        var transformationFunction = functions.get(functionName);
+        if (transformationFunction == null) {
+            return Map.of("error", "function not found");
+        }
+
         var start = currentTimeMillis();
         System.out.println("start at " + start);
         System.out.println("generate " + width + "x" + height + " image");
 
-        BufferedImage image = ImageGenerator.generateImage(id, (int)(width*scale), (int)(height*scale));
+        BufferedImage image = ImageGenerator.generateImage(id, (int)(width*scale), (int)(height*scale), transformationFunction);
         BufferedImage blurImage = blurImage(image);
         BufferedImage scaledImage = scaleImage(blurImage, width, height);
 
