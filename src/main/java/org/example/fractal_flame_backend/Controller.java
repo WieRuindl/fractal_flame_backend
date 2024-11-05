@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 import java.util.HashMap;
@@ -26,18 +28,20 @@ public class Controller {
 
     @GetMapping("/generate/{width}/{height}/{scale}/{id}")
     @CrossOrigin(origins = "https://fractal-flame-ui.onrender.com")
-    public Map<String, String> hello(
+//    @CrossOrigin(origins = "http://localhost:7083")
+    public Map<String, String> generateImage(
             @PathVariable int width,
             @PathVariable int height,
-            @PathVariable int scale,
+            @PathVariable double scale,
             @PathVariable String id
     ) {
         var start = currentTimeMillis();
         System.out.println("start at " + start);
         System.out.println("generate " + width + "x" + height + " image");
 
-        BufferedImage image = ImageGenerator.generateImage(id, width*scale, height*scale);
-        BufferedImage scaledImage = scaleImage(image, width, height);
+        BufferedImage image = ImageGenerator.generateImage(id, (int)(width*scale), (int)(height*scale));
+        BufferedImage blurImage = blurImage(image);
+        BufferedImage scaledImage = scaleImage(blurImage, width, height);
 
         var end = currentTimeMillis();
         System.out.println((end - start)/1000 + "s");
@@ -47,6 +51,19 @@ public class Controller {
         response.put("image", base64);
 
         return response;
+    }
+
+    public static BufferedImage blurImage(BufferedImage image) {
+        float[] matrix = {
+                1/16f, 2/16f, 1/16f,
+                2/16f, 4/16f, 2/16f,
+                1/16f, 2/16f, 1/16f
+        };
+        ConvolveOp convolveOp = new ConvolveOp(new Kernel(3, 3, matrix), ConvolveOp.EDGE_NO_OP, null);
+        BufferedImage blurredImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+        convolveOp.filter(image, blurredImage);
+
+        return blurredImage;
     }
 
     public BufferedImage scaleImage(Image originalImage, int targetWidth, int targetHeight) {
